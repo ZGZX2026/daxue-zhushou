@@ -2405,7 +2405,7 @@
     var tokens = [];
     var re = /\*\*([^*]+)\*\*/g;
     var last = 0, m;
-    function clean(s) { return esc(s.replace(/[*#-`]/g, '')); }
+    function clean(s) { return esc(s.replace(/[*#\-`]/g, '')); }
     while ((m = re.exec(text)) !== null) {
       if (m.index > last) tokens.push({ t: clean(text.slice(last, m.index)), b: false });
       tokens.push({ t: clean(m[1]), b: true });

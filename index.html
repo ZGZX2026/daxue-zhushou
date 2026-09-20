@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#4f6ef7">
+<title>大学助手 · 全科刷题与模拟测试</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ========== 登录界面 ========== -->
+<div class="login-mask" id="loginMask">
+  <div class="login-bg" aria-hidden="true">
+    <span class="blob blob1"></span>
+    <span class="blob blob2"></span>
+    <span class="blob blob3"></span>
+    <span class="login-grid"></span>
+  </div>
+
+  <div class="login-stage">
+    <!-- 品牌区 -->
+    <div class="login-brand">
+      <div class="brand-badge"><span>🎓</span></div>
+      <h1 class="brand-word">大学助手</h1>
+      <p class="brand-en">UNIVERSITY&nbsp;HELPER</p>
+      <p class="brand-slogan">17门核心课程 · 知识总结 / 题库训练 / 模拟测试</p>
+    </div>
+
+    <!-- 第一步：姓名 -->
+    <section class="login-panel" id="lp1">
+      <div class="lp-steps">
+        <i class="on">1</i><em></em><i>2</i>
+      </div>
+      <h2 class="lp-h">欢迎登录</h2>
+      <p class="lp-sub">请输入您的姓名，开启学习之旅</p>
+      <label class="lp-field">
+        <span class="lp-ico">👤</span>
+        <input type="text" id="loginName" maxlength="12" placeholder="您的姓名" autocomplete="off">
+      </label>
+      <button class="login-btn" id="toStep2" type="button">
+        <span>下一步</span><span class="lb-arrow">→</span>
+      </button>
+      <div class="lp-foot">🔒 学习数据仅保存在您的本机设备</div>
+    </section>
+
+    <!-- 第二步：9位学号 -->
+    <section class="login-panel" id="lp2">
+      <button class="lp-back" id="lpBack" type="button" aria-label="返回上一步">
+        <span>‹</span><em>返回</em>
+      </button>
+      <div class="lp-steps">
+        <i class="done">✓</i><em class="on"></em><i class="on">2</i>
+      </div>
+      <h2 class="lp-h">你好，<span id="lpNameShow">同学</span> 👋</h2>
+      <p class="lp-sub">请输入 <b>9位学号</b>，每格填写一位数字</p>
+      <div class="sid-boxes" id="sidBoxes"></div>
+      <div class="sid-err" id="sidErr"></div>
+      <button class="login-btn" id="doLogin" disabled type="button">登 录</button>
+    </section>
+
+    <!-- 第三步：加载过渡 -->
+    <section class="login-panel lp-loading-panel" id="lp3">
+      <div class="lp-ring"><span></span></div>
+      <h2 class="lp-h">正在查找您的学号信息</h2>
+      <p class="lp-sub">系统正在校验学籍信息，请稍候<span class="dot-anim">…</span></p>
+    </section>
+  </div>
+
+  <div class="login-copy">逐光智序工作室 · 承制</div>
+</div>
+
+<div id="app">
+
+  <!-- ========== 首页 ========== -->
+  <section class="view view-home" id="viewHome">
+    <header class="home-hero">
+      <div class="hero-badge">University Helper</div>
+      <h1 class="hero-title">大学助手</h1>
+      <p class="hero-sub">17门核心课程 · 知识总结 / 题库训练 / 模拟测试</p>
+      <div class="hero-search" id="heroSearchBox">
+        <input type="text" id="heroSearchInput" placeholder="输入问题，联网寻找答案…" autocomplete="off">
+        <button onclick="webSearchHome()">搜索</button>
+      </div>
+      <div class="hero-ai-entry" onclick="openGlobalAiChat()">
+        <span class="hae-ico">🤖</span>
+        <span class="hae-txt">AI智能问答</span>
+        <span class="hae-desc">不限定课程，大学全科问题都能问</span>
+        <span class="hae-arrow">›</span>
+      </div>
+      <div class="hero-checkin-bar" id="heroCheckinBar" onclick="goCheckin('home')"></div>
+    </header>
+
+    <div class="section-head">
+      <h2 id="homeScopeTitle">全部课程</h2>
+      <div class="head-right">
+        <span class="section-tip" id="courseCountTip"></span>
+        <div class="college-picker" id="collegePicker">
+          <button class="cp-btn" id="cpBtn" type="button" onclick="cpToggle(event)">
+            <span class="cp-btn-ico">🏛️</span><span class="cp-btn-txt">各级学院</span><i class="cp-caret"></i>
+          </button>
+          <div class="cp-panel cp-panel-colleges hidden" id="cpCollegePanel"></div>
+          <div class="cp-panel cp-panel-majors hidden" id="cpMajorPanel"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scope-bar hidden" id="scopeBar"></div>
+    <div class="course-grid" id="courseGrid"></div>
+    <footer class="home-footer">
+      <div class="hf-line hf-main">大学助手 · 逐光智序工作室承制</div>
+      <div class="hf-line">© 2026逐光智序工作室</div>
+      <div class="hf-line hf-ver">版本号：1.00.013.4285</div>
+    </footer>
+  </section>
+
+  <!-- ========== 我的 ========== -->
+  <section class="view view-mine hidden" id="viewMine">
+    <header class="mine-hero">
+      <div class="mine-avatar">👤</div>
+      <div class="mine-id">
+        <div class="mine-name" id="mineName">同学</div>
+        <div class="mine-sid" id="mineSid">学号：--</div>
+      </div>
+      <button class="mine-logout" id="mineLogout" type="button" onclick="logoutMine()">退出登录</button>
+    </header>
+    <div id="mineBody"></div>
+  </section>
+
+  <!-- ========== 课程功能页 ========== -->
+  <section class="view view-course hidden" id="viewCourse">
+    <header class="sub-header">
+      <button class="nav-back" onclick="goBackHome()">‹</button>
+      <div class="sub-title" id="courseHeaderName">课程</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="course-banner" id="courseBanner">
+      <div class="course-banner-icon" id="courseBannerIcon">📘</div>
+      <div class="course-banner-info">
+        <div class="course-banner-name" id="courseBannerName"></div>
+        <div class="course-banner-meta" id="courseBannerMeta"></div>
+      </div>
+    </div>
+
+    <div class="feature-list">
+      <div class="feature-card fc-summary" onclick="goKnowledge()">
+        <div class="fc-icon">📖</div>
+        <div class="fc-body">
+          <div class="fc-name">重点知识总结</div>
+          <div class="fc-desc">核心知识点梳理与记忆要点，支持联网查证</div>
+        </div>
+        <div class="fc-arrow">›</div>
+      </div>
+      <div class="feature-card fc-practice" onclick="openPracticeSheet()">
+        <div class="fc-icon">✏️</div>
+        <div class="fc-body">
+          <div class="fc-name">题库训练</div>
+          <div class="fc-desc">顺序练习 / 随机练习 / 错题重练，每题即时解析</div>
+        </div>
+        <div class="fc-arrow">›</div>
+      </div>
+      <div class="feature-card fc-exam" onclick="startExam()">
+        <div class="fc-icon">🎯</div>
+        <div class="fc-body">
+          <div class="fc-name">模拟测试</div>
+          <div class="fc-desc">随机抽取20题，交卷后生成三角能力总结图</div>
+        </div>
+        <div class="fc-arrow">›</div>
+      </div>
+      <div class="feature-card fc-video" onclick="openVideo()">
+        <div class="fc-icon">🎬</div>
+        <div class="fc-body">
+          <div class="fc-name">视频学习</div>
+          <div class="fc-desc">B站精选教学视频，边看视频边记笔记</div>
+        </div>
+        <div class="fc-arrow">›</div>
+      </div>
+      <div class="feature-card fc-ai" onclick="startAiExam()">
+        <div class="fc-icon">🤖</div>
+        <div class="fc-body">
+          <div class="fc-name">AI建题训练</div>
+          <div class="fc-desc">AI 智能生成20题，自动判卷并生成总结报告</div>
+        </div>
+        <div class="fc-arrow">›</div>
+      </div>
+    </div>
+
+    <div class="course-stat-card">
+      <div class="stat-item">
+        <div class="stat-num" id="statBankCount">--</div>
+        <div class="stat-label">题库总量</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="statPracticed">0</div>
+        <div class="stat-label">已练习题数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="statWrong">0</div>
+        <div class="stat-label">错题数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="statBest">--</div>
+        <div class="stat-label">最佳测试分</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 重点知识总结页 ========== -->
+  <section class="view view-knowledge hidden" id="viewKnowledge">
+    <header class="sub-header">
+      <button class="nav-back" onclick="location.hash='#/course/'+UH.ctx.id">‹</button>
+      <div class="sub-title">重点知识总结</div>
+      <span class="nav-actions">
+        <button class="nav-btn-icon" onclick="openAiChat()" title="AI智能问答">🤖<small>AI问答</small></button>
+        <button class="nav-btn-icon" onclick="goMyNotes()" title="我的整理">🗂<small>整理</small></button>
+        <button class="nav-btn-icon" onclick="searchCourseNet()" title="联网搜索">🔍</button>
+      </span>
+    </header>
+    <div class="knowledge-wrap" id="knowledgeWrap"></div>
+  </section>
+
+  <!-- ========== AI智能问答页 ========== -->
+  <section class="view view-ai-chat hidden" id="viewAiChat">
+    <header class="sub-header">
+      <button class="nav-back" onclick="goBackFromAiChat()">‹</button>
+      <div class="sub-title">AI智能问答</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="ai-chat-wrap" id="aiChatWrap"></div>
+    <div class="ai-chat-bar">
+      <input id="aiChatInput" type="text" maxlength="500" placeholder="输入学习问题，向 AI 提问…" autocomplete="off" />
+      <button id="aiChatSend" type="button" onclick="aiChatSend()">发送</button>
+    </div>
+  </section>
+
+  <!-- ========== AI建题训练（答题页） ========== -->
+  <section class="view view-quiz hidden" id="viewAiExam">
+    <header class="quiz-header ai-exam-header">
+      <button class="qz-nav" id="aiExamPrev" onclick="aiExamMove(-1)" style="visibility:hidden">上一题</button>
+      <div class="qz-center">
+        <div class="qz-pos" id="aiExamPos">1 / 20</div>
+        <div class="qz-mode-line">
+          <span class="qz-mode-tag qz-mode-ai">AI建题训练</span>
+          <span class="qz-timer" id="aiExamTimer">00:00</span>
+          <button class="qz-exit" onclick="exitAiExam()">返回</button>
+        </div>
+      </div>
+      <button class="qz-nav qz-nav-right" id="aiExamNext" onclick="aiExamNextClick()">下一题</button>
+    </header>
+    <div class="quiz-body" id="aiExamBody"></div>
+  </section>
+
+  <!-- ========== AI建题训练（结果页） ========== -->
+  <section class="view view-result hidden" id="viewAiResult">
+    <header class="sub-header">
+      <button class="nav-back" onclick="location.hash='#/course/'+UH.ctx.id">‹</button>
+      <div class="sub-title">AI测试总结报告</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="result-wrap" id="aiResultWrap"></div>
+  </section>
+
+  <!-- ========== 我的整理（列表） ========== -->
+  <section class="view view-notes hidden" id="viewNotes">
+    <header class="sub-header">
+      <button class="nav-back" onclick="location.hash='#/knowledge/'+UH.ctx.id">‹</button>
+      <div class="sub-title">我的整理</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="notes-video-banner" id="notesVideoBanner" onclick="openVideo()"></div>
+    <div class="notes-wrap" id="notesListWrap"></div>
+    <button class="fab-add" id="noteAddBtn" type="button">＋</button>
+  </section>
+
+  <!-- ========== 添加/编辑笔记 ========== -->
+  <section class="view view-note-edit hidden" id="viewNoteEdit">
+    <header class="sub-header">
+      <button class="nav-back" onclick="backFromEditor()">‹</button>
+      <div class="sub-title" id="noteEditTitle">添加知识</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="note-edit-wrap" id="noteEditWrap"></div>
+  </section>
+
+  <!-- ========== 笔记详情（放大查看） ========== -->
+  <section class="view view-note-detail hidden" id="viewNoteDetail">
+    <header class="sub-header">
+      <button class="nav-back" id="noteDetailBack">‹</button>
+      <div class="sub-title">知识详情</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="note-detail-wrap" id="noteDetailWrap"></div>
+  </section>
+
+  <!-- ========== 题库训练页 ========== -->
+  <section class="view view-quiz hidden" id="viewPractice">
+    <header class="quiz-header">
+      <button class="qz-nav" id="practicePrev" onclick="practiceMove(-1)">上一题</button>
+      <div class="qz-center">
+        <div class="qz-pos" id="practicePos">1 / 200</div>
+        <div class="qz-mode-line">
+          <span class="qz-mode-tag" id="practiceModeTag">顺序练习</span>
+          <button class="qz-switch" onclick="openPracticeSheet()">切换</button>
+          <button class="qz-exit" onclick="exitPractice()">返回</button>
+        </div>
+      </div>
+      <button class="qz-nav qz-nav-right" id="practiceNext" onclick="practiceMove(1)">下一题</button>
+    </header>
+    <div class="quiz-body" id="practiceBody"></div>
+  </section>
+
+  <!-- ========== 模拟测试页 ========== -->
+  <section class="view view-quiz hidden" id="viewExam">
+    <header class="quiz-header exam-header">
+      <button class="qz-nav" id="examPrev" onclick="examMove(-1)" style="visibility:hidden">上一题</button>
+      <div class="qz-center">
+        <div class="qz-pos" id="examPos">1 / 20</div>
+        <div class="qz-mode-line">
+          <span class="qz-mode-tag qz-mode-exam">模拟测试</span>
+          <span class="qz-timer" id="examTimer">00:00</span>
+          <button class="qz-exit" onclick="exitExam()">返回</button>
+        </div>
+      </div>
+      <button class="qz-nav qz-nav-right" id="examNext" onclick="examNextClick()">下一题</button>
+    </header>
+
+    <div class="quiz-body" id="examBody"></div>
+
+    <!-- 答题中不显示能力图与底部交卷栏；第20题右上有“提交”按钮，20题全做才能交卷 -->
+  </section>
+
+  <!-- ========== 测试结果页 ========== -->
+  <section class="view view-result hidden" id="viewResult">
+    <header class="sub-header">
+      <button class="nav-back" onclick="location.hash='#/course/'+UH.ctx.id">‹</button>
+      <div class="sub-title">测试结果报告</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="result-wrap" id="resultWrap"></div>
+  </section>
+
+  <!-- ========== 视频学习页 ========== -->
+  <section class="view view-video hidden" id="viewVideo">
+    <header class="sub-header">
+      <button class="nav-back" onclick="location.hash='#/course/'+UH.ctx.id">‹</button>
+      <div class="sub-title">视频学习</div>
+      <span class="nav-actions">
+        <button class="nav-btn-icon" onclick="goVideoNotes()" title="我的视频笔记">🗒<small>笔记</small></button>
+      </span>
+    </header>
+    <div class="video-wrap" id="videoWrap"></div>
+  </section>
+
+  <!-- ========== 每日打卡页 ========== -->
+  <section class="view view-checkin hidden" id="viewCheckin">
+    <header class="sub-header">
+      <button class="nav-back" onclick="backFromCheckin()">‹</button>
+      <div class="sub-title">每日打卡</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="checkin-wrap" id="checkinWrap"></div>
+  </section>
+
+  <!-- ========== 智能发现学习情况页 ========== -->
+  <section class="view view-insight hidden" id="viewInsight">
+    <header class="sub-header">
+      <button class="nav-back" onclick="backFromInsight()">‹</button>
+      <div class="sub-title">智能发现</div>
+      <span class="nav-placeholder"></span>
+    </header>
+    <div class="insight-wrap" id="insightWrap"></div>
+  </section>
+
+  <!-- ========== 底部导航栏（首页 / 我的） ========== -->
+  <nav class="tabbar hidden" id="tabbar">
+    <i class="tab-glow" id="tabGlow"></i>
+    <button class="tab-item active" data-tab="home" type="button">
+      <span class="tab-ico">🏠</span><span class="tab-txt">首页</span>
+    </button>
+    <button class="tab-item" data-tab="mine" type="button">
+      <span class="tab-ico">👤</span><span class="tab-txt">我的</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ========== 添加知识：方式选择弹层 ========== -->
+<div class="sheet-mask hidden" id="addNoteSheetMask" onclick="closeAddNoteSheet(event)">
+  <div class="mode-sheet">
+    <div class="sheet-title">选择添加方式</div>
+    <button class="sheet-opt" onclick="chooseAddNote('hand')">
+      <span class="sheet-opt-icon">✍️</span>
+      <span class="sheet-opt-body"><b>手写整理</b><small>自己输入标题和正文，可附加图片</small></span>
+    </button>
+    <button class="sheet-opt" onclick="chooseAddNote('photo')">
+      <span class="sheet-opt-icon">📷</span>
+      <span class="sheet-opt-body"><b>拍照 / 相册</b><small>直接拍摄或从相册选择图片（最多5张）</small></span>
+    </button>
+    <button class="sheet-cancel" onclick="closeAddNoteSheet()">取消</button>
+  </div>
+</div>
+
+<!-- ========== 图库图片修改方式 ========== -->
+<div class="sheet-mask hidden" id="galleryEditSheetMask" onclick="closeGalleryEditSheet(event)">
+  <div class="mode-sheet">
+    <div class="sheet-title">修改图片</div>
+    <button class="sheet-opt" onclick="galleryEditPick('camera')">
+      <span class="sheet-opt-icon">📷</span>
+      <span class="sheet-opt-body"><b>拍照替换</b><small>调用相机重新拍摄一张</small></span>
+    </button>
+    <button class="sheet-opt" onclick="galleryEditPick('album')">
+      <span class="sheet-opt-icon">🖼</span>
+      <span class="sheet-opt-body"><b>相册替换</b><small>从相册选择一张替换原图</small></span>
+    </button>
+    <button class="sheet-cancel" onclick="closeGalleryEditSheet()">取消</button>
+  </div>
+</div>
+
+<!-- ========== 相机权限询问 ========== -->
+<div class="cam-mask hidden" id="camPermMask">
+  <div class="cam-dialog">
+    <div class="cam-ico">📷</div>
+    <h3>允许调用相机拍照？</h3>
+    <p>需要使用您的相机拍摄知识点照片。<br>所有照片仅保存在您的本机设备中，<b>不会上传到任何服务器</b>。</p>
+    <div class="cam-btns">
+      <button class="cam-deny" id="camDeny" type="button">拒 绝</button>
+      <button class="cam-allow" id="camAllow" type="button">同 意</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 练习模式选择弹层 ========== -->
+<div class="sheet-mask hidden" id="modeSheetMask" onclick="closePracticeSheet(event)">
+  <div class="mode-sheet">
+    <div class="sheet-title">选择题库训练模式</div>
+    <button class="sheet-opt" onclick="startPractice('seq')">
+      <span class="sheet-opt-icon">📒</span>
+      <span class="sheet-opt-body"><b>顺序练习</b><small>按题库编号从头到尾逐题练习</small></span>
+    </button>
+    <button class="sheet-opt" onclick="startPractice('rand')">
+      <span class="sheet-opt-icon">🔀</span>
+      <span class="sheet-opt-body"><b>随机练习</b><small>每次随机抽取题目，适合全面检测</small></span>
+    </button>
+    <button class="sheet-opt" onclick="startPractice('wrong')">
+      <span class="sheet-opt-icon">❤️</span>
+      <span class="sheet-opt-body"><b>错题重练</b><small>集中消灭历史错题（<em id="sheetWrongCount">0</em>题）</small></span>
+    </button>
+    <button class="sheet-cancel" onclick="closePracticeSheet()">取消</button>
+  </div>
+</div>
+
+<!-- ========== 图片全屏缩放查看器 ========== -->
+<div class="img-viewer" id="imgViewer">
+  <div class="iv-hint">原图比例完整展示 · 双指捏合 / 滚轮 / 双击缩放（最大100倍）· 拖动平移 · 点击空白处退出</div>
+  <img class="iv-img" id="ivImg" alt="笔记图片">
+</div>
+
+<!-- 隐藏的文件选择：相机 / 相册（网页与APK均可用） -->
+<input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden-file">
+<input type="file" id="albumInput" accept="image/*" multiple class="hidden-file">
+
+<!-- 通用轻提示 -->
+<div class="toast hidden" id="toast"></div>
+
+<script src="js/data/common.js"></script>
+<script src="js/data/gaoshu.js"></script>
+<script src="js/data/wuli.js"></script>
+<script src="js/data/python.js"></script>
+<script src="js/data/xiandai.js"></script>
+<script src="js/data/lisan.js"></script>
+<script src="js/data/gailv.js"></script>
+<script src="js/data/java.js"></script>
+<script src="js/data/mysql.js"></script>
+<script src="js/data/zucheng.js"></script>
+<script src="js/data/shuju.js"></script>
+<script src="js/data/javaee.js"></script>
+<script src="js/data/ai.js"></script>
+<script src="js/data/ruangong.js"></script>
+<script src="js/data/fenxi.js"></script>
+<script src="js/data/wangluo.js"></script>
+<script src="js/data/xiangmu.js"></script>
+<script src="js/data/agent.js"></script>
+<script src="js/data/catalog.js"></script>
+<script src="js/data/genbank.js"></script>
+<script src="js/data/videos.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
